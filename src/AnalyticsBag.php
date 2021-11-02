@@ -31,14 +31,16 @@ class AnalyticsBag
         $currentBag = $this->session->get($this->sessionKey);
 
         $existing = false;
-        foreach($currentBag as $bag) {
-            unset($bag['datetime'], $bag['referer'], $bag['domain']);
+        if(isset($currentBag) && count($currentBag) != 0) {
+            foreach ($currentBag as $bag) {
+                unset($bag['datetime'], $bag['referer'], $bag['domain']);
 
-            if($bag == $parameters) {
-                $existing = true;
+                if ($bag == $parameters) {
+                    $existing = true;
+                }
             }
         }
-
+        
         if(!$existing && count($parameters)>1) {
             // Lets timestamp the request.
             $parameters['datetime'] = (String) \Carbon\Carbon::now();
