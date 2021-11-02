@@ -25,7 +25,30 @@ class AnalyticsBag
     {
         $parameters = $this->determineFromRequest($request);
 
-        $this->session->put($this->sessionKey, $parameters);
+        $referer = request()->headers->get('referer');
+        $parse = parse_url($referer);
+
+        $currentBag = $this->session->get($this->sessionKey);
+
+        $existing = false;
+        foreach($currentBag as $bag) {
+            unset($bag['datetime'], $bag['referer'], $bag['domain']);
+
+            if($bag == $parameters) {
+                $existing = true;
+            }
+        }
+
+        if(!$existing && count($parameters)>1) {
+            // Lets timestamp the request.
+            $parameters['datetime'] = (String) \Carbon\Carbon::now();
+            $parameters['referer'] = $referer ?? null;
+            $parameters['domain'] = $parse['host'] ?? null;
+
+            $currentBag[] = $parameters;
+
+            $this->session->put($this->sessionKey, $currentBag);
+        }
     }
 
     public function get(): array
